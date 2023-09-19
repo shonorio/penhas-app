@@ -17,7 +17,7 @@ class ChatMainModule extends WidgetModule {
 
   @override
   List<Bind> get binds => [
-        Bind.factory(
+        Bind.factory<ChatMainController>(
           (i) => ChatMainController(
             chatToggleFeature: i.get<ChatPrivateToggleFeature>(),
           ),
@@ -27,12 +27,12 @@ class ChatMainModule extends WidgetModule {
             modulesServices: i.get<IAppModulesServices>(),
           ),
         ),
-        Bind.factory(
+        Bind.factory<ChatMainTalksController>(
           (i) => ChatMainTalksController(
             chatChannelRepository: i.get<IChatChannelRepository>(),
           ),
         ),
-        Bind.factory(
+        Bind.factory<ChatMainPeopleController>(
           (i) => ChatMainPeopleController(
             usersRepository: i.get<IUsersRepository>(),
             skillRepository: i.get<IFilterSkillRepository>(),
