@@ -121,7 +121,7 @@ extension _ChatMainTalksControllerBasePrivate on _ChatMainTalksControllerBase {
       cards.add(
         ChatMainSupportTile(
           title: session.support!.user.nickname!,
-          content: 'Fale com as adminstradoras do app',
+          content: 'Fale com as administradoras do app',
           channel: session.support,
         ),
       );
