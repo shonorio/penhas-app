@@ -16,6 +16,9 @@ class ChatChannelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatar = channel.user.avatar == null
+        ? null
+        : SvgPicture.network(channel.user.avatar!);
     return GestureDetector(
       onTap: () => onPressed(channel),
       child: Container(
@@ -32,7 +35,7 @@ class ChatChannelCard extends StatelessWidget {
               CircleAvatar(
                 backgroundColor: const Color.fromRGBO(239, 239, 239, 1.0),
                 radius: 20,
-                child: SvgPicture.network(channel.user.avatar!),
+                child: avatar,
               ),
               Expanded(
                 child: Padding(

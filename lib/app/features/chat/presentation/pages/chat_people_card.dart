@@ -16,6 +16,9 @@ class ChatPeopleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatar =
+        person.avatar == null ? null : SvgPicture.network(person.avatar!);
+
     return GestureDetector(
       onTap: () => onPressed(person),
       child: Container(
@@ -32,7 +35,7 @@ class ChatPeopleCard extends StatelessWidget {
               CircleAvatar(
                 backgroundColor: const Color.fromRGBO(239, 239, 239, 1.0),
                 radius: 20,
-                child: SvgPicture.network(person.avatar!),
+                child: avatar,
               ),
               Expanded(
                 child: Padding(
