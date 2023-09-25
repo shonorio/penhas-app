@@ -4,6 +4,7 @@ import 'package:flutter_modular_test/flutter_modular_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:mocktail_image_network/mocktail_image_network.dart';
+import 'package:penhas/app/core/error/failures.dart';
 import 'package:penhas/app/features/appstate/domain/entities/app_state_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_assistant_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_channel_available_entity.dart';
@@ -102,6 +103,24 @@ void main() {
           await iSeeText('Suas conversas (2)');
           await iSeeWidget(ChatChannelCard, text: 'Tereza');
           await iSeeWidget(ChatChannelCard, text: 'Maria');
+        });
+      },
+    );
+
+    testWidgets(
+      'shows an error message when it gets an error',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenFailure((_) => ServerFailure());
+
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+        // updated state
+        await mockNetworkImages(() async {
+          await tester.pump();
+          await iSeeText('Ocorreu um erro!');
+          await iSeeText(
+              'O servidor está com problema neste momento, tente novamente.');
         });
       },
     );
