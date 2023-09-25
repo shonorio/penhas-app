@@ -84,34 +84,29 @@ void main() {
         });
       },
     );
+
+    testWidgets(
+      'with channel shows the channel cards',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.withChannel);
+
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+        // updated state
+        await mockNetworkImages(() async {
+          await tester.pump();
+          // i found all cards
+          await iSeeWidget(ChatAssistantCard, text: 'Assistente PenhaS');
+          await iSeeWidget(ChatAssistantCard, text: 'Suporte PenhaS');
+          await iSeeText('Suas conversas (2)');
+          await iSeeWidget(ChatChannelCard, text: 'Tereza');
+          await iSeeWidget(ChatChannelCard, text: 'Maria');
+        });
+      },
+    );
   });
 }
-
-/*
-        testWidgets(
-          'shows the correct widgets',
-          (tester) async {
-            when(() => ChatModulesMock.channelRepository.listChannel())
-                .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
-            await theAppIsRunning(tester, const Scaffold(body: ChatMainPage()));
-            // start with loading state
-            await iSeeWidget(CircularProgressIndicator);
-            // updated state
-            await mockNetworkImages(() async {
-              await tester.pump();
-              // i only see widgets for support mode
-              await iDontSeeWidget(DefaultTabController);
-              await iDontSeeWidget(TabBar, text: 'Conversas');
-              await iDontSeeWidget(TabBar, text: 'Pessoas');
-              await iDontSeeText('Suas conversas (2)');
-              await iDontSeeWidget(ChatChannelCard, text: 'Tereza');
-              await iDontSeeWidget(ChatChannelCard, text: 'Maria');
-              await iSeeWidget(ChatAssistantCard, text: 'Assistente PenhaS');
-              await iSeeWidget(ChatAssistantCard, text: 'Suporte PenhaS');
-            });
-          },
-        );
- */
 
 extension ChatChannelAvailableEntityEx on ChatChannelAvailableEntity {
   static ChatChannelAvailableEntity get empty {
