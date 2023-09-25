@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_modular_test/flutter_modular_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mocktail_image_network/mocktail_image_network.dart';
 import 'package:penhas/app/features/appstate/domain/entities/app_state_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_assistant_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_channel_available_entity.dart';
@@ -10,15 +11,16 @@ import 'package:penhas/app/features/chat/domain/entities/chat_channel_entity.dar
 import 'package:penhas/app/features/chat/domain/entities/chat_user_entity.dart';
 import 'package:penhas/app/features/chat/domain/usecases/chat_toggle_feature.dart';
 import 'package:penhas/app/features/chat/presentation/chat_main_module.dart';
-import 'package:penhas/app/features/chat/presentation/chat_main_page.dart';
+import 'package:penhas/app/features/chat/presentation/pages/chat_assistant_card.dart';
+import 'package:penhas/app/features/chat/presentation/pages/chat_channel_card.dart';
 import 'package:penhas/app/features/chat/presentation/people/chat_main_people_controller.dart';
 import 'package:penhas/app/features/chat/presentation/talk/chat_main_talks_controller.dart';
+import 'package:penhas/app/features/chat/presentation/talk/chat_main_talks_page.dart';
 
-import '../../../../utils/golden_tests.dart';
-import '../../../../utils/mocktail_extension.dart';
-import '../../../../utils/widget_test_steps.dart';
-import '../../authentication/presentation/mocks/app_modules_mock.dart';
-import '../mocks/chat_modules_mock.dart';
+import '../../../../../utils/mocktail_extension.dart';
+import '../../../../../utils/widget_test_steps.dart';
+import '../../../authentication/presentation/mocks/app_modules_mock.dart';
+import '../../mocks/chat_modules_mock.dart';
 
 void main() {
   setUp(() {
@@ -51,54 +53,65 @@ void main() {
     Modular.removeModule(ChatMainModule());
   });
 
-  group(ChatMainPage, () {
+  group(ChatMainTalksPage, () {
     testWidgets(
-      'in support mode do not shows TabBar',
+      'start with loading state',
       (tester) async {
         when(() => ChatModulesMock.channelRepository.listChannel())
             .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
-
-        await theAppIsRunning(tester, const Scaffold(body: ChatMainPage()));
-        await iDontSeeWidget(DefaultTabController);
-        await iDontSeeWidget(TabBar, text: 'Conversas');
-        await iDontSeeWidget(TabBar, text: 'Pessoas');
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+        // start with loading state
+        await iSeeWidget(CircularProgressIndicator);
       },
     );
-    group(
-      'golden tests',
-      () {
-        group('for empty channel', () {
-          setUp(() {
-            when(() => ChatModulesMock.channelRepository.listChannel())
-                .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
-          });
-
-          screenshotTest(
-            'looks as expected',
-            fileName: 'chat_main_page_empty',
-            pageBuilder: () => const ChatMainPage(),
-          );
-        });
-        group('with channel', () {
-          setUp(() {
-            when(() => ChatModulesMock.channelRepository.listChannel())
-                .thenSuccess((_) => ChatChannelAvailableEntityEx.withChannel);
-            when(() =>
-                AppModulesMock.appModulesServices
-                    .feature(name: any(named: 'name'))).thenAnswer((_) async =>
-                const AppStateModuleEntity(code: 'modo_anonimo', meta: '{}'));
-          });
-
-          screenshotTest(
-            'look as expected',
-            fileName: 'chat_main_page_with_channel',
-            pageBuilder: () => const ChatMainPage(),
-          );
+    testWidgets(
+      'without channels shows only assistant card',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+        // updated state
+        await mockNetworkImages(() async {
+          await tester.pump();
+          // i found only assistant card widgets
+          await iDontSeeText('Suas conversas (2)');
+          await iDontSeeWidget(ChatChannelCard, text: 'Tereza');
+          await iDontSeeWidget(ChatChannelCard, text: 'Maria');
+          await iSeeWidget(ChatAssistantCard, text: 'Assistente PenhaS');
+          await iSeeWidget(ChatAssistantCard, text: 'Suporte PenhaS');
         });
       },
     );
   });
 }
+
+/*
+        testWidgets(
+          'shows the correct widgets',
+          (tester) async {
+            when(() => ChatModulesMock.channelRepository.listChannel())
+                .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
+            await theAppIsRunning(tester, const Scaffold(body: ChatMainPage()));
+            // start with loading state
+            await iSeeWidget(CircularProgressIndicator);
+            // updated state
+            await mockNetworkImages(() async {
+              await tester.pump();
+              // i only see widgets for support mode
+              await iDontSeeWidget(DefaultTabController);
+              await iDontSeeWidget(TabBar, text: 'Conversas');
+              await iDontSeeWidget(TabBar, text: 'Pessoas');
+              await iDontSeeText('Suas conversas (2)');
+              await iDontSeeWidget(ChatChannelCard, text: 'Tereza');
+              await iDontSeeWidget(ChatChannelCard, text: 'Maria');
+              await iSeeWidget(ChatAssistantCard, text: 'Assistente PenhaS');
+              await iSeeWidget(ChatAssistantCard, text: 'Suporte PenhaS');
+            });
+          },
+        );
+ */
 
 extension ChatChannelAvailableEntityEx on ChatChannelAvailableEntity {
   static ChatChannelAvailableEntity get empty {
@@ -136,6 +149,7 @@ extension ChatChannelAvailableEntityEx on ChatChannelAvailableEntity {
           lastMessageIsMime: true,
           user: const ChatUserEntity(
             activity: 'há alguns dias',
+            // avatar: 'https://api.example.com/avatar/p2.svg',
             avatar: null,
             blockedMe: false,
             nickname: 'Maria',
