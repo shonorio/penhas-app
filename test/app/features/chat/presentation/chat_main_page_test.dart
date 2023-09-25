@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_modular_test/flutter_modular_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mocktail_image_network/mocktail_image_network.dart';
 import 'package:penhas/app/features/appstate/domain/entities/app_state_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_assistant_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_channel_available_entity.dart';
@@ -10,11 +12,14 @@ import 'package:penhas/app/features/chat/domain/entities/chat_user_entity.dart';
 import 'package:penhas/app/features/chat/domain/usecases/chat_toggle_feature.dart';
 import 'package:penhas/app/features/chat/presentation/chat_main_module.dart';
 import 'package:penhas/app/features/chat/presentation/chat_main_page.dart';
+import 'package:penhas/app/features/chat/presentation/pages/chat_assistant_card.dart';
+import 'package:penhas/app/features/chat/presentation/pages/chat_channel_card.dart';
 import 'package:penhas/app/features/chat/presentation/people/chat_main_people_controller.dart';
 import 'package:penhas/app/features/chat/presentation/talk/chat_main_talks_controller.dart';
 
 import '../../../../utils/golden_tests.dart';
 import '../../../../utils/mocktail_extension.dart';
+import '../../../../utils/widget_test_steps.dart';
 import '../../authentication/presentation/mocks/app_modules_mock.dart';
 import '../mocks/chat_modules_mock.dart';
 
@@ -50,6 +55,34 @@ void main() {
   });
 
   group(ChatMainPage, () {
+    group(
+      'in support mode',
+      () {
+        testWidgets(
+          'shows the correct widgets',
+          (tester) async {
+            when(() => ChatModulesMock.channelRepository.listChannel())
+                .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
+            await theAppIsRunning(tester, const Scaffold(body: ChatMainPage()));
+            // start with loading state
+            await iSeeWidget(CircularProgressIndicator);
+            // updated state
+            await mockNetworkImages(() async {
+              await tester.pump();
+              // i only see widgets for support mode
+              await iDontSeeWidget(DefaultTabController);
+              await iDontSeeWidget(TabBar, text: 'Conversas');
+              await iDontSeeWidget(TabBar, text: 'Pessoas');
+              await iDontSeeText('Suas conversas (2)');
+              await iDontSeeWidget(ChatChannelCard, text: 'Tereza');
+              await iDontSeeWidget(ChatChannelCard, text: 'Maria');
+              await iSeeWidget(ChatAssistantCard, text: 'Assistente PenhaS');
+              await iSeeWidget(ChatAssistantCard, text: 'Suporte PenhaS');
+            });
+          },
+        );
+      },
+    );
     group(
       'golden tests',
       () {
