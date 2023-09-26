@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_modular_test/flutter_modular_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:mocktail_image_network/mocktail_image_network.dart';
 import 'package:penhas/app/features/appstate/domain/entities/app_state_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_assistant_entity.dart';
 import 'package:penhas/app/features/chat/domain/entities/chat_channel_available_entity.dart';
@@ -64,6 +65,26 @@ void main() {
         await iDontSeeWidget(TabBar, text: 'Pessoas');
       },
     );
+
+    testWidgets(
+      'with private chat enabled shows TabBar with `Conversas` and `Pessoas`',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.withChannel);
+        when(() => AppModulesMock.appModulesServices
+                .feature(name: any(named: 'name')))
+            .thenAnswer((_) async =>
+                const AppStateModuleEntity(code: 'chat_privado', meta: '{}'));
+
+        await theAppIsRunning(tester, const Scaffold(body: ChatMainPage()));
+        await mockNetworkImages(() async {
+          await tester.pump();
+          await iSeeWidget(DefaultTabController);
+          await iSeeWidget(TabBar, text: 'Conversas');
+          await iSeeWidget(TabBar, text: 'Pessoas');
+        });
+      },
+    );
     group(
       'golden tests',
       () {
@@ -86,7 +107,7 @@ void main() {
             when(() =>
                 AppModulesMock.appModulesServices
                     .feature(name: any(named: 'name'))).thenAnswer((_) async =>
-                const AppStateModuleEntity(code: 'modo_anonimo', meta: '{}'));
+                const AppStateModuleEntity(code: 'chat_privado', meta: '{}'));
           });
 
           screenshotTest(
