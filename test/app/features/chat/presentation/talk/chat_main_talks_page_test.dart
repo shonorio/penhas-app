@@ -173,6 +173,31 @@ void main() {
         ).called(1);
       },
     );
+
+    testWidgets(
+      'tap channel card forward to the chat',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.withChannel);
+        when(() => AppModulesMock.modularNavigator
+                .pushNamed(any(), arguments: any(named: 'arguments')))
+            .thenAnswer((_) => Future.value(true));
+
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+
+        await mockNetworkImages(() async {
+          await tester.pump();
+        });
+
+        await iTapText(tester, text: 'Tereza');
+        verify(
+          () => AppModulesMock.modularNavigator.pushNamed(
+              '/mainboard/chat/__my_ultra_secret_session__',
+              arguments: any(named: 'arguments')),
+        ).called(1);
+      },
+    );
   });
 }
 
