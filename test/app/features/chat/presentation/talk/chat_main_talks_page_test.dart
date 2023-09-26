@@ -124,6 +124,30 @@ void main() {
         });
       },
     );
+
+    testWidgets(
+      'assistant card with pending quiz forward to the quiz page',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
+        when(() => AppModulesMock.modularNavigator
+                .popAndPushNamed(any(), arguments: any(named: 'arguments')))
+            .thenAnswer((_) => Future.value());
+
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+
+        await mockNetworkImages(() async {
+          await tester.pump();
+        });
+
+        await iTapText(tester, text: 'Assistente PenhaS');
+        verify(
+          () => AppModulesMock.modularNavigator
+              .popAndPushNamed('/quiz', arguments: any(named: 'arguments')),
+        ).called(1);
+      },
+    );
   });
 }
 
