@@ -126,7 +126,7 @@ void main() {
     );
 
     testWidgets(
-      'assistant card with pending quiz forward to the quiz page',
+      'tap assistant card with pending quiz forward to the quiz page',
       (tester) async {
         when(() => ChatModulesMock.channelRepository.listChannel())
             .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
@@ -145,6 +145,31 @@ void main() {
         verify(
           () => AppModulesMock.modularNavigator
               .popAndPushNamed('/quiz', arguments: any(named: 'arguments')),
+        ).called(1);
+      },
+    );
+
+    testWidgets(
+      'tap assistant card forward to the chat',
+      (tester) async {
+        when(() => ChatModulesMock.channelRepository.listChannel())
+            .thenSuccess((_) => ChatChannelAvailableEntityEx.empty);
+        when(() => AppModulesMock.modularNavigator
+                .pushNamed(any(), arguments: any(named: 'arguments')))
+            .thenAnswer((_) => Future.value(true));
+
+        await theAppIsRunning(
+            tester, const Scaffold(body: ChatMainTalksPage()));
+
+        await mockNetworkImages(() async {
+          await tester.pump();
+        });
+
+        await iTapText(tester, text: 'Suporte PenhaS');
+        verify(
+          () => AppModulesMock.modularNavigator.pushNamed(
+              '/mainboard/chat/Sda24',
+              arguments: any(named: 'arguments')),
         ).called(1);
       },
     );
