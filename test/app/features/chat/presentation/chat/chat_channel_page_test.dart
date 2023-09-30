@@ -1,0 +1,54 @@
+import 'dart:async';
+
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_modular_test/flutter_modular_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:penhas/app/features/chat/domain/states/chat_channel_usecase_event.dart';
+import 'package:penhas/app/features/chat/presentation/chat/chat_channel_controller.dart';
+import 'package:penhas/app/features/chat/presentation/chat/chat_channel_page.dart';
+import 'package:penhas/app/features/chat/presentation/chat_main_module.dart';
+import 'package:penhas/app/features/mainboard/presentation/mainboard/mainboard_module.dart';
+
+import '../../../../../utils/widget_test_steps.dart';
+import '../../../authentication/presentation/mocks/app_modules_mock.dart';
+import '../../mocks/chat_modules_mock.dart';
+
+void main() {
+  setUp(() {
+    AppModulesMock.init();
+    ChatModulesMock.init();
+
+    initModules([
+      MainboardModule(),
+      ChatMainModule(),
+    ], replaceBinds: [
+      Bind<ChatChannelController>(
+        (i) => ChatChannelController(
+          useCase: ChatModulesMock.channelUseCase,
+        ),
+      ),
+    ]);
+  });
+
+  tearDown(() {
+    Modular.removeModule(ChatMainModule());
+    Modular.removeModule(MainboardModule());
+  });
+
+  group(ChatPage, () {
+    testWidgets(
+      'in the initial state shows a loading page',
+      (tester) async {
+        when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+          (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+            [const ChatChannelUseCaseEvent.initial()],
+          ),
+        );
+
+        await theAppIsRunning(tester, const ChatPage());
+        await iSeeText('Carregando...');
+      },
+    );
+  });
+}
