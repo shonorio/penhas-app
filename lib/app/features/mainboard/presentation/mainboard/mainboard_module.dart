@@ -328,19 +328,19 @@ class MainboardModule extends Module {
             apiProvider: i.get<IApiProvider>(),
           ),
         ),
-        Bind.factory(
+        Bind.factory<ChatChannelController>(
           (i) => ChatChannelController(
             useCase: i.get<ChatChannelUseCase>(),
           ),
         ),
-        Bind.factory(
+        Bind.factory<ChatChannelUseCase>(
           (i) => ChatChannelUseCase(
             session: i.args?.data ??
                 ChatChannelOpenEntity(token: i.args?.params['token']),
             channelRepository: i.get<IChatChannelRepository>(),
           ),
         ),
-        Bind.factory(
+        Bind.factory<GetChatChannelTokenUseCase>(
           (i) => GetChatChannelTokenUseCase(repository: i()),
         ),
       ];
