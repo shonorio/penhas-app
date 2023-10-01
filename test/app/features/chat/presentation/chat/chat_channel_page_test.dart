@@ -50,5 +50,21 @@ void main() {
         await iSeeText('Carregando...');
       },
     );
+
+    testWidgets(
+      'shows an error message for the error state',
+      (tester) async {
+        when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+          (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+            [const ChatChannelUseCaseEvent.errorOnLoading('Server error!')],
+          ),
+        );
+
+        await theAppIsRunning(tester, const ChatPage());
+        await tester.pumpAndSettle();
+        await iSeeText('Ocorreu um erro!');
+        await iSeeText('Server error!');
+      },
+    );
   });
 }
