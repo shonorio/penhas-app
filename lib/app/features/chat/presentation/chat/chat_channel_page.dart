@@ -113,10 +113,11 @@ extension _ChatPageStateMethods on _ChatPageState {
   }
 
   Widget headerTitle(ChatUserEntity user) {
-    Widget avatar;
-    if (user.avatar!.toLowerCase().endsWith('.svg')) {
+    Widget avatar = Container();
+
+    if (user.avatar?.toLowerCase().endsWith('.svg') ?? false) {
       avatar = SvgPicture.network(user.avatar!, height: 22, width: 22);
-    } else {
+    } else if (user.avatar != null) {
       avatar = Image.network(user.avatar!);
     }
 
