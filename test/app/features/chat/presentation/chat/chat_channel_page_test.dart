@@ -89,37 +89,73 @@ void main() {
           },
         );
 
-        screenshotTest('show the empty chat screen as expected',
-            fileName: 'chat_page_sent_message',
-            pageBuilder: () => const ChatPage(),
-            setUp: () {
-              const currentUser = ChatUserEntity(
-                activity: 'há cinco minutos',
-                nickname: 'PenhaS',
-                avatar: null,
-                userId: 42,
-                blockedMe: false,
-              );
+        screenshotTest(
+          'show the empty chat screen as expected',
+          fileName: 'chat_page_sent_message',
+          pageBuilder: () => const ChatPage(),
+          setUp: () {
+            const currentUser = ChatUserEntity(
+              activity: 'há cinco minutos',
+              nickname: 'PenhaS',
+              avatar: null,
+              userId: 42,
+              blockedMe: false,
+            );
 
-              when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
-                (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
-                  [
-                    const ChatChannelUseCaseEvent.loaded(),
-                    const ChatChannelUseCaseEvent.updateUser(currentUser),
-                    const ChatChannelUseCaseEvent.updateMetadata(
-                      ChatChannelSessionMetadataEntity(
-                        canSendMessage: true,
-                        didBlocked: true,
-                        headerMessage: 'My header message!',
-                        headerWarning: null,
-                        isBlockable: false,
-                        lastMessageEtag: 'etag42',
-                      ),
-                    )
-                  ],
-                ),
-              );
-            });
+            when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+              (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+                [
+                  const ChatChannelUseCaseEvent.loaded(),
+                  const ChatChannelUseCaseEvent.updateUser(currentUser),
+                  const ChatChannelUseCaseEvent.updateMetadata(
+                    ChatChannelSessionMetadataEntity(
+                      didBlocked: true,
+                      isBlockable: false,
+                      canSendMessage: true,
+                      headerWarning: null,
+                      lastMessageEtag: 'etag42',
+                      headerMessage: 'My header message!',
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        );
+
+        screenshotTest(
+          'show the block by owner chat screen as expected',
+          fileName: 'chat_page_blocked_by_owner',
+          pageBuilder: () => const ChatPage(),
+          setUp: () {
+            const currentUser = ChatUserEntity(
+              activity: 'há cinco minutos',
+              nickname: 'PenhaS',
+              avatar: null,
+              userId: 42,
+              blockedMe: false,
+            );
+
+            when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+              (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+                [
+                  const ChatChannelUseCaseEvent.loaded(),
+                  const ChatChannelUseCaseEvent.updateUser(currentUser),
+                  const ChatChannelUseCaseEvent.updateMetadata(
+                    ChatChannelSessionMetadataEntity(
+                      isBlockable: true,
+                      didBlocked: false,
+                      canSendMessage: false,
+                      headerWarning: null,
+                      lastMessageEtag: 'etag42',
+                      headerMessage: 'My header message!',
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   });
