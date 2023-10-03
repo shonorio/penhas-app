@@ -156,6 +156,40 @@ void main() {
             );
           },
         );
+
+        screenshotTest(
+          'show the block by me chat screen as expected',
+          fileName: 'chat_page_blocked_by_me',
+          pageBuilder: () => const ChatPage(),
+          setUp: () {
+            const currentUser = ChatUserEntity(
+              activity: 'há cinco minutos',
+              nickname: 'PenhaS',
+              avatar: null,
+              userId: 42,
+              blockedMe: false,
+            );
+
+            when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+              (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+                [
+                  const ChatChannelUseCaseEvent.loaded(),
+                  const ChatChannelUseCaseEvent.updateUser(currentUser),
+                  const ChatChannelUseCaseEvent.updateMetadata(
+                    ChatChannelSessionMetadataEntity(
+                      isBlockable: true,
+                      didBlocked: true,
+                      canSendMessage: false,
+                      headerWarning: null,
+                      lastMessageEtag: 'etag42',
+                      headerMessage: 'My header message!',
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   });
