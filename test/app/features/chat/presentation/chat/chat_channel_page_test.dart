@@ -4,6 +4,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_modular_test/flutter_modular_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:penhas/app/features/chat/domain/entities/chat_channel_session_entity.dart';
+import 'package:penhas/app/features/chat/domain/entities/chat_user_entity.dart';
 import 'package:penhas/app/features/chat/domain/states/chat_channel_usecase_event.dart';
 import 'package:penhas/app/features/chat/presentation/chat/chat_channel_controller.dart';
 import 'package:penhas/app/features/chat/presentation/chat/chat_channel_page.dart';
@@ -86,6 +88,38 @@ void main() {
             );
           },
         );
+
+        screenshotTest('show the empty chat screen as expected',
+            fileName: 'chat_page_sent_message',
+            pageBuilder: () => const ChatPage(),
+            setUp: () {
+              const currentUser = ChatUserEntity(
+                activity: 'há cinco minutos',
+                nickname: 'PenhaS',
+                avatar: null,
+                userId: 42,
+                blockedMe: false,
+              );
+
+              when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+                (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+                  [
+                    const ChatChannelUseCaseEvent.loaded(),
+                    const ChatChannelUseCaseEvent.updateUser(currentUser),
+                    const ChatChannelUseCaseEvent.updateMetadata(
+                      ChatChannelSessionMetadataEntity(
+                        canSendMessage: true,
+                        didBlocked: true,
+                        headerMessage: 'My header message!',
+                        headerWarning: null,
+                        isBlockable: false,
+                        lastMessageEtag: 'etag42',
+                      ),
+                    )
+                  ],
+                ),
+              );
+            });
       },
     );
   });
