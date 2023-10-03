@@ -10,6 +10,7 @@ import 'package:penhas/app/features/chat/presentation/chat/chat_channel_page.dar
 import 'package:penhas/app/features/chat/presentation/chat_main_module.dart';
 import 'package:penhas/app/features/mainboard/presentation/mainboard/mainboard_module.dart';
 
+import '../../../../../utils/golden_tests.dart';
 import '../../../../../utils/widget_test_steps.dart';
 import '../../../authentication/presentation/mocks/app_modules_mock.dart';
 import '../../mocks/chat_modules_mock.dart';
@@ -64,6 +65,27 @@ void main() {
         await tester.pumpAndSettle();
         await iSeeText('Ocorreu um erro!');
         await iSeeText('Server error!');
+      },
+    );
+
+    group(
+      'golden tests',
+      () {
+        screenshotTest(
+          'show errors as expected',
+          fileName: 'chat_page_error',
+          pageBuilder: () => const ChatPage(),
+          setUp: () {
+            when(() => ChatModulesMock.channelUseCase.dataSource).thenAnswer(
+              (_) => Stream<ChatChannelUseCaseEvent>.fromIterable(
+                [
+                  const ChatChannelUseCaseEvent.errorOnLoading(
+                      'O servidor está inacessível, o PenhaS está com acesso à Internet?')
+                ],
+              ),
+            );
+          },
+        );
       },
     );
   });
